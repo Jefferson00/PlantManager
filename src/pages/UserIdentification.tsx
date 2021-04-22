@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInputProps } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, TextInputProps } from 'react-native';
 
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import styled from 'styled-components/native';
 import { Button } from '../components/Button';
 import { useNavigation } from '@react-navigation/core';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface TextInputType extends TextInputProps {
     isFocused: boolean;
@@ -33,8 +34,22 @@ export function UserIdentification() {
     }
 
 
-    function handleSubmit() {
-        navigation.navigate('Confirmation')
+    async function handleSubmit() {
+        if (!userName)
+        return Alert.alert('Me diz como chamar você?');
+
+        try {
+            await AsyncStorage.setItem('@plantmanager:user', userName);
+            navigation.navigate('Confirmation', {
+                title: 'Prontinho',
+                subtitle: 'Agora vamos começar a cuidar das suas plantinhas com muito cuidado.',
+                buttonTitle: 'Começar',
+                icon: 'smile',
+                nextScreen: 'PlantSelect'
+            }); 
+        } catch (error) {
+            Alert.alert('Não possível salvar o seu nome');
+        }
     }
 
     return (
