@@ -5,13 +5,30 @@ import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import styled from 'styled-components/native';
 
-import userImg from '../assets/jefferson.jpg'
-
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { pickImage } from '../libs/storage';
+import { Alert } from 'react-native';
+
 
 export function Header(){
 
     const [userName, setUserName] = useState<string>();
+    const [userImage, setUserImage] = useState<string>();
+
+    const selectImage = async () => {
+        let result = await pickImage()
+    
+        if (result) {
+            
+            try {
+                await AsyncStorage.setItem('@plantmanager:userImage', result);
+                
+                setUserImage(result);
+            } catch (error) {
+                Alert.alert('Não possível salvar sua foto');
+            }
+        }
+    };
 
     useEffect(()=>{
         async function getUserName(){
@@ -22,6 +39,15 @@ export function Header(){
         getUserName();
     },[userName]);
 
+    useEffect(()=>{
+        async function getUserImage(){
+            const user = await AsyncStorage.getItem('@plantmanager:userImage');
+            setUserImage(user || '');
+        }
+
+        getUserImage();
+    },[userImage]);
+
     return(
         <MainContainer>
             <TextContent>
@@ -29,7 +55,9 @@ export function Header(){
                 <UsernameText>{userName}</UsernameText>
             </TextContent>
 
-            <ImageContent source={userImg}/>
+            <ImageButton onPress={selectImage}>
+                <ImageContent source={{uri:userImage}}/>
+            </ImageButton>
         </MainContainer>
     )
 }
@@ -59,6 +87,12 @@ const UsernameText = styled.Text`
 `
 
 const ImageContent = styled.Image`
+    width:70px;
+    height:70px;
+    border-radius:35px;
+`
+
+const ImageButton = styled.TouchableOpacity`
     width:70px;
     height:70px;
     border-radius:35px;

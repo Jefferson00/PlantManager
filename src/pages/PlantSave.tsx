@@ -8,7 +8,7 @@ import Waterdrop from '../assets/waterdrop.png';
 import { Button } from '../components/Button';
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform, ScrollView } from 'react-native';
 import { format, isBefore } from 'date-fns';
 import { PlantProps, savePlant } from '../libs/storage';
 
@@ -26,26 +26,26 @@ export function PlantSave(){
 
     function handleChangeTime(event: Event, dateTime: Date | undefined){
         if(Platform.OS === 'android'){
-            setShowDatePicker(!showDatePicker);
+            setShowDatePicker((oldState) => !oldState);
         }
 
         if(dateTime && isBefore(dateTime, new Date())){
             setSelectedDateTime(new Date());
-            return Alert.alert('Escolha uma hora no futuro!')
+            return Alert.alert('Escolha uma hora no futuro! ⏰')
         }
 
         if(dateTime) setSelectedDateTime(dateTime);
     }
 
     function handleOpenDatePicker(){
-        setShowDatePicker(!showDatePicker);
+        setShowDatePicker((oldState) => !oldState);;
     }
 
     async function handleSavePlant(){
         try {
             await savePlant({
                 ...plant,
-                dateTimeNotification: selectedDateTime
+                dateTimeNotification: selectedDateTime,
             });
 
             navigation.navigate('Confirmation', {
@@ -56,11 +56,15 @@ export function PlantSave(){
                 nextScreen: 'MyPlants',
             })
         } catch (error) {
-            return Alert.alert('Não foi possível salvar a planta.')
+            return Alert.alert('Não foi possível salvar a planta. 😢')
         }
     }
 
     return(
+        <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{justifyContent: 'space-between', flexGrow:1}}
+        >
         <MainContainer>
             <PlantInfo>
                 <SvgFromUri
@@ -94,12 +98,14 @@ export function PlantSave(){
                 </AlertLabel>
 
                 {showDatePicker &&
-                <DataTimePicker
-                    value={selectedDateTime}
-                    mode="time"
-                    display="spinner"
-                    onChange={handleChangeTime}
-                />
+                    (
+                        <DataTimePicker
+                            value={selectedDateTime}
+                            mode="time"
+                            display="spinner"
+                            onChange={handleChangeTime}
+                        />
+                    )
                 }
 
                 {Platform.OS === 'android' && (
@@ -121,6 +127,7 @@ export function PlantSave(){
                 />
             </ControllerView>
         </MainContainer>
+        </ScrollView>
     )
 }
 

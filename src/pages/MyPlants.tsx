@@ -1,26 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import { Alert , FlatList} from 'react-native';
 
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import styled from 'styled-components/native';
 
 import { Header } from '../components/Header';
+import { PlantCardSecondary } from '../components/PlantCardSecondary';
+import { Load } from '../components/Load';
 
-import Waterdrop from '../assets/waterdrop.png';
-import { FlatList } from 'react-native-gesture-handler';
-import { loadPlant, PlantProps } from '../libs/storage';
 import { formatDistance } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { PlantCardSecondary } from '../components/PlantCardSecondary';
+
+import Waterdrop from '../assets/waterdrop.png';
+import { loadPlant, PlantProps, removePlant} from '../libs/storage';
+import { NoResultsAnimation } from '../components/NoResultsAnimation';
 
 export function MyPlants(){
     const [myPlants, setMyPlants] = useState<PlantProps[]>([]);
     const [loading, setLoading] = useState(true);
     const [nextWatered, setNextWatered] = useState<string>();
+    const [noResults, setNoResults] = useState(true);
 
     useEffect(() =>{
         async function loadStorageData(){
             const plantsStoraged = await loadPlant();
+
+            if(JSON.stringify(plantsStoraged) === '[]') return  setLoading(false);
+
+            //console.log("LOADS: ")
 
             const nextTime = formatDistance(
                 new Date(plantsStoraged[0].dateTimeNotification).getTime(),
@@ -29,40 +37,76 @@ export function MyPlants(){
             );
 
             setNextWatered(
-                `Regue sua ${plantsStoraged[0].name} daqui a ${nextTime} horas`
+                `Regue sua ${plantsStoraged[0].name} daqui a ${nextTime}`
             )
 
             setMyPlants(plantsStoraged);
+            setNoResults(false);
             setLoading(false);
         }
 
         loadStorageData();
     },[])
 
+    function handleRemove(plant: PlantProps){
+        Alert.alert('Remover', `Deseja remover a ${plant.name}?`, [
+            {
+                text: 'Não 😰',
+                style: 'cancel'
+            },
+            {
+                text: 'Sim 😉',
+                onPress: async () =>{
+                    try {
+                        await removePlant(plant.id)
+
+                        setMyPlants((oldData) =>
+                            oldData.filter((item) => item.id !== plant.id)
+                        );
+
+                    } catch (error) {
+                        Alert.alert('Não foi possível remover! 😥')
+                    }
+                }
+            }
+        ])
+    }
+
+    if (loading) return <Load/>
+
     return(
         <MainContainer>
             <Header/>
             <MainContent>
-                <Spotlight>
-                    <SpotlightImage source={Waterdrop}/>
-                    <SpotlightText>
-                        {nextWatered}
-                    </SpotlightText>
-                </Spotlight>
+                {!noResults &&
+                    <Spotlight>
+                        <SpotlightImage source={Waterdrop}/>
+                        <SpotlightText>
+                            {nextWatered}
+                        </SpotlightText>
+                    </Spotlight>
+                }
 
                 <Plants>
                     <PlantsTitle>
-                        Próximas regadas
+                        {noResults ? 'Nenhuma plantinha cadastrada ainda 🙁' : ' Próximas regadas'}
                     </PlantsTitle>
 
-                    <FlatList 
-                        data={myPlants}
-                        keyExtractor={(item) => String(item.id)}
-                        renderItem={({item}) => (
-                            <PlantCardSecondary data={item}/>
-                        )}
-                        showsVerticalScrollIndicator={false}
-                    />
+                    {noResults ?
+                        <NoResultsAnimation/>
+                        :
+                        <FlatList 
+                            data={myPlants}
+                            keyExtractor={(item) => String(item.id)}
+                            renderItem={({item}) => (
+                                <PlantCardSecondary 
+                                    data={item}
+                                    handleRemove={() => {handleRemove(item)}}
+                                />
+                            )}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    }
                 </Plants>
             </MainContent>
         </MainContainer>

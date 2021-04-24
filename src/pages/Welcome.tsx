@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {Image} from 'react-native';
 import {Entypo} from '@expo/vector-icons'
 
@@ -8,14 +8,41 @@ import colors from '../styles/colors';
 import styled from 'styled-components/native';
 import fonts from '../styles/fonts'
 import { useNavigation } from '@react-navigation/core';
+import { getUserName } from '../libs/storage';
+import AppLoading from 'expo-app-loading'
 
 export function Welcome() {
 
   const navigation = useNavigation();
+  const [hasUser, setHasUser] = useState<string | null>(null);
 
   function handleStart(){
     navigation.navigate('UserIdentification')
   }
+
+  async function loadUser(){
+    const user = await getUserName();
+
+    if (user !== null){
+       setHasUser('user')
+    }else{
+       setHasUser('noUser')
+    }
+
+  }
+
+  useEffect(()=>{
+      loadUser()
+  },[])
+
+
+  useEffect(()=>{
+      if(hasUser === 'user'){
+        navigation.navigate('PlantSelect');
+      };
+  },[hasUser])
+  
+  if(hasUser === null || hasUser === 'user') return <AppLoading/>;
 
   return (
     <MainContainer>
@@ -50,7 +77,6 @@ const MainContainer = styled.SafeAreaView`
 const Title = styled.Text`
   color:${colors.heading};
   font-size:28px;
-  font-weight:bold;
   text-align:center;
   margin-top:58px;
   font-family:${fonts.heading};
