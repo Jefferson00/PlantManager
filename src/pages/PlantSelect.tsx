@@ -102,7 +102,7 @@ export function PlantSelect() {
 
     return(
         <MainContainer>
-            <Header/>
+            <Header screen="PlantSelect"/>
             <Title>
                 Em qual ambiente
             </Title>

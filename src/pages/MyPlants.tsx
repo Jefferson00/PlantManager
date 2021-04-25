@@ -9,7 +9,7 @@ import { Header } from '../components/Header';
 import { PlantCardSecondary } from '../components/PlantCardSecondary';
 import { Load } from '../components/Load';
 
-import { formatDistance } from 'date-fns';
+import { formatDistance, isBefore } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 import Waterdrop from '../assets/waterdrop.png';
@@ -28,8 +28,6 @@ export function MyPlants(){
 
             if(JSON.stringify(plantsStoraged) === '[]') return  setLoading(false);
 
-            //console.log("LOADS: ")
-
             const nextTime = formatDistance(
                 new Date(plantsStoraged[0].dateTimeNotification).getTime(),
                 new Date().getTime(),
@@ -46,7 +44,28 @@ export function MyPlants(){
         }
 
         loadStorageData();
+       
     },[])
+
+    useEffect(()=>{
+        setTimeout(()=>{
+            if(JSON.stringify(myPlants) !== '[]'){
+                const nextTime = formatDistance(
+                    new Date(myPlants[0].dateTimeNotification).getTime(),
+                    new Date().getTime(),
+                    {locale: pt}
+                );
+    
+                setNextWatered(
+                    `Regue sua ${myPlants[0].name} daqui a ${nextTime}`
+                )
+            }
+        },60000)
+    },[myPlants, nextWatered])
+
+    useEffect(()=>{
+        if(JSON.stringify(myPlants) === '[]') return  setNoResults(true);
+    },[myPlants])
 
     function handleRemove(plant: PlantProps){
         Alert.alert('Remover', `Deseja remover a ${plant.name}?`, [
@@ -76,7 +95,7 @@ export function MyPlants(){
 
     return(
         <MainContainer>
-            <Header/>
+            <Header screen="MyPlants"/>
             <MainContent>
                 {!noResults &&
                     <Spotlight>

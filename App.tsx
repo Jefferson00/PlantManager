@@ -27,11 +27,11 @@ export default function App() {
       
       noifications();*/
       
-      async function deletde() {
+      /*async function deletde() {
         await AsyncStorage.clear();
       }
       
-      deletde();
+      deletde();*/
       
       return () => subscription.remove();
   },[])
