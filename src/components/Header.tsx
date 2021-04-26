@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { pickImage } from '../libs/storage';
 import { Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { UserContext } from '../contexts/UserContext';
 
 interface HeaderProps{
     screen: 'PlantSelect' | 'MyPlants';
@@ -15,24 +16,9 @@ interface HeaderProps{
 
 export function Header({screen}:HeaderProps){
     const [userName, setUserName] = useState<string>();
-    const [userImage, setUserImage] = useState<string>();
     const [isInputNameActive, setIsInputNameActive] = useState(false);
 
-
-    const selectImage = async () => {
-        let result = await pickImage()
-    
-        if (result) {
-            
-            try {
-                await AsyncStorage.setItem('@plantmanager:userImage', result);
-                
-                setUserImage(result);
-            } catch (error) {
-                Alert.alert('Não possível salvar sua foto');
-            }
-        }
-    };
+    const {selectImage, userImage} = useContext(UserContext);
 
     function handleUpdateUserName(){
         if (isInputNameActive) handleSubmitUserName();
@@ -63,15 +49,6 @@ export function Header({screen}:HeaderProps){
     useEffect(()=>{
         getUserName();
     },[]);
-
-    useEffect(()=>{
-        async function getUserImage(){
-            const user = await AsyncStorage.getItem('@plantmanager:userImage');
-            setUserImage(user || '');
-        }
-
-        getUserImage();
-    },[userImage]);
 
     return(
         <MainContainer>

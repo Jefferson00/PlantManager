@@ -5,6 +5,7 @@ import AppLoading from 'expo-app-loading'
 import * as Notifications from 'expo-notifications';
 import { PlantProps } from './src/libs/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { UserProvider } from './src/contexts/UserContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -41,7 +42,9 @@ export default function App() {
   }
 
   return (
-    <Routes/>
+    <UserProvider>
+      <Routes/>
+    </UserProvider>
   );
 }
 

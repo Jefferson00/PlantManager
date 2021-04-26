@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert , FlatList} from 'react-native';
+import { Alert , FlatList, Modal, View} from 'react-native';
 
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
@@ -11,6 +11,7 @@ import { Load } from '../components/Load';
 
 import { formatDistance, isBefore } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import {SvgFromUri, Text} from 'react-native-svg'
 
 import Waterdrop from '../assets/waterdrop.png';
 import { loadPlant, PlantProps, removePlant} from '../libs/storage';
@@ -18,6 +19,8 @@ import { NoResultsAnimation } from '../components/NoResultsAnimation';
 
 export function MyPlants(){
     const [myPlants, setMyPlants] = useState<PlantProps[]>([]);
+    const [selectedPlant, setSelectedPlant] = useState<PlantProps | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [nextWatered, setNextWatered] = useState<string>();
     const [noResults, setNoResults] = useState(true);
@@ -68,34 +71,37 @@ export function MyPlants(){
     },[myPlants])
 
     function handleRemove(plant: PlantProps){
-        Alert.alert('Remover', `Deseja remover a ${plant.name}?`, [
-            {
-                text: 'Não 😰',
-                style: 'cancel'
-            },
-            {
-                text: 'Sim 😉',
-                onPress: async () =>{
-                    try {
-                        await removePlant(plant.id)
+        setSelectedPlant(plant);
+        setModalVisible(true);
+    }
 
-                        setMyPlants((oldData) =>
-                            oldData.filter((item) => item.id !== plant.id)
-                        );
+    function handleCancel(){
+        setModalVisible(false);
+        setSelectedPlant(null);
+    }
 
-                    } catch (error) {
-                        Alert.alert('Não foi possível remover! 😥')
-                    }
-                }
+    async function handleDeletePlant(){
+        if(selectedPlant){
+            try {
+                await removePlant(selectedPlant.id)
+
+                setMyPlants((oldData) =>
+                    oldData.filter((item) => item.id !== selectedPlant.id)
+                );
+                setModalVisible(false);
+                setSelectedPlant(null);
+
+            } catch (error) {
+                Alert.alert('Não foi possível remover! 😥')
             }
-        ])
+        }
     }
 
     if (loading) return <Load/>
 
     return(
         <MainContainer>
-            <Header screen="MyPlants"/>
+                <Header screen="MyPlants"/>
             <MainContent>
                 {!noResults &&
                     <Spotlight>
@@ -128,6 +134,61 @@ export function MyPlants(){
                     }
                 </Plants>
             </MainContent>
+            
+            {/*MODAL CONTENT*/}
+            {selectedPlant &&
+                <Modal
+                    animationType="fade"
+                    visible={modalVisible}
+                    transparent
+                    statusBarTranslucent
+                >
+                    
+                    <ModalContainer>
+                        <ModalContent>
+                            <ModalImage>
+                                <SvgFromUri 
+                                uri={selectedPlant.photo}
+                                width={70}
+                                height={70}
+                                />
+                            </ModalImage>
+
+                            <ModalTextView>
+                                <ModalText>
+                                    Deseja mesmo deletar sua
+                                </ModalText>
+                                <View style={{flexDirection:'row'}}>
+                                    <ModalText style={{fontFamily:fonts.heading}}>
+                                        {selectedPlant.name}
+                                    </ModalText>
+                                    <ModalText >
+                                        ?
+                                    </ModalText>
+                                </View>
+                            </ModalTextView>
+
+                            <ButtonsView>
+                                <ModalButton onPress={handleCancel}>
+                                    <ModalCancelText>
+                                        Cancelar
+                                    </ModalCancelText>
+                                </ModalButton>
+
+                                <ModalButton 
+                                    style={{marginLeft:8}}
+                                    onPress={handleDeletePlant}
+                                >
+                                    <ModalDeleteText>
+                                        Deletar
+                                    </ModalDeleteText>
+                                </ModalButton>
+                            </ButtonsView>
+                        </ModalContent>
+                    </ModalContainer>
+                    
+                </Modal>
+            }
         </MainContainer>
     )
 }
@@ -172,5 +233,72 @@ const Plants = styled.View`
 const PlantsTitle = styled.Text`
     font-size:24px;
     font-family:${fonts.heading};
+    color:${colors.heading};
+`
+
+const ModalContent = styled.View`
+    justify-content:center;
+    height:322px;
+    width:80%;
+    margin: 0 auto;
+    border-radius:20px;
+    align-items:center;
+    background-color:${colors.white};
+`
+
+const ModalContainer = styled.View`
+    background-color:rgba(0,0,0,0.5);
+    flex:1;
+    justify-content:center;
+    align-items:center;
+`
+
+const ModalTextView = styled.View`
+    margin-top:16px;
+    align-items:center;
+`
+
+const ModalText = styled.Text`
+    font-size:17px;
+    line-height:25px;
+    font-family:${fonts.text};
+    color:${colors.heading};
+`
+
+const ModalImage = styled.View`
+    width: 120px;
+    height: 120px;
+    background-color:${colors.shape};
+    border-radius:20px;
+    align-items:center;
+    justify-content:center;
+`
+const ModalButton = styled.TouchableOpacity`
+    background-color:${colors.shape};
+    height:48px;
+    padding: 0 10px;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    min-width:96px;
+`
+const ButtonsView = styled.View`
+    flex-direction:row;
+    width:100%;
+    justify-content:center;
+    margin-top:24px;
+`
+
+const ModalDeleteText = styled.Text`
+    font-size:15px;
+    line-height:23px;
+    font-family:${fonts.text};
+    color:${colors.red};
+`
+
+const ModalCancelText = styled.Text`
+    font-size:15px;
+    line-height:23px;
+    font-family:${fonts.text};
     color:${colors.heading};
 `
