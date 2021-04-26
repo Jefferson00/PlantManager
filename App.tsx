@@ -5,7 +5,7 @@ import AppLoading from 'expo-app-loading'
 import * as Notifications from 'expo-notifications';
 import { PlantProps } from './src/libs/storage';
 import { UserProvider } from './src/contexts/UserContext';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const [fontsLoaded] = useFonts({

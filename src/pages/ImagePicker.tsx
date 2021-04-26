@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, TextInputProps } from 'react-native';
 
 import colors from '../styles/colors';
@@ -9,18 +9,11 @@ import { useNavigation } from '@react-navigation/core';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { pickImage } from '../libs/storage';
+import { UserContext } from '../contexts/UserContext';
 
 export function ImageSelection() {
-    const [userImage, setUserImage] = useState<string | null>(null);
+    const {userImage, selectImage} = useContext(UserContext)
     const navigation = useNavigation();
-
-    const selectImage = async () => {
-        let result = await pickImage()
-    
-        if (result) {
-            setUserImage(result);
-        }
-    };
 
     async function handleSubmit() {
         if (!userImage)

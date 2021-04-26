@@ -4,7 +4,7 @@ import { pickImage } from '../libs/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface UserContextData {
-    userImage:string | undefined;
+    userImage:string | null;
     selectImage: () => void;
 }
 
@@ -15,7 +15,7 @@ interface UserProviderProps{
 export const UserContext = createContext({} as UserContextData)
 
 export function UserProvider({children}: UserProviderProps){
-    const [userImage, setUserImage] = useState<string>();
+    const [userImage, setUserImage] = useState<string | null>(null);
 
     const selectImage = async () => {
         let result = await pickImage()
