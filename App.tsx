@@ -4,8 +4,8 @@ import {useFonts, Jost_400Regular, Jost_600SemiBold, Jost_300Light} from '@expo-
 import AppLoading from 'expo-app-loading'
 import * as Notifications from 'expo-notifications';
 import { PlantProps } from './src/libs/storage';
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { UserProvider } from './src/contexts/UserContext';
+
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -21,7 +21,7 @@ export default function App() {
           console.log(data)
         }
       )
-
+  
       /*async function noifications(){
         await Notifications.cancelAllScheduledNotificationsAsync();
       }

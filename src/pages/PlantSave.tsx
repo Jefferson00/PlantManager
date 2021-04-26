@@ -212,7 +212,7 @@ const TipContainer  = styled.View<TipsProps>`
     border-radius:20px;
     position:relative;
     bottom:${(props) => (
-        props.isUpdate ? 0 : 80 
+        props.isUpdate ? "0" : "80px" 
     )};
 `
 
