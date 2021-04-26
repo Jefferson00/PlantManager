@@ -10,16 +10,22 @@ import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import { Alert, Platform, ScrollView } from 'react-native';
 import { format, isBefore } from 'date-fns';
-import { PlantProps, savePlant } from '../libs/storage';
+import { PlantProps, savePlant, updatePlant } from '../libs/storage';
+import { Feather } from '@expo/vector-icons';
 
 interface Params{
     plant: PlantProps;
+    isUpdate: boolean;
+}
+
+interface TipsProps{
+    isUpdate: boolean;
 }
 
 export function PlantSave(){
     const route = useRoute();
     const navigation = useNavigation();
-    const {plant} = route.params as Params;
+    const {plant, isUpdate} = route.params as Params;
 
     const [selectedDateTime, setSelectedDateTime] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
@@ -60,6 +66,25 @@ export function PlantSave(){
         }
     }
 
+    async function handleUpdatePlant(){
+        try {
+            await updatePlant({
+                ...plant,
+                dateTimeNotification: selectedDateTime,
+            });
+
+            navigation.navigate('Confirmation', {
+                title: 'Atualizado com sucesso',
+                subtitle: 'Fique tranquilo que sempre vamos lembrar você de cuidar da sua plantinha com muito cuidado.',
+                buttonTitle: 'Muito Obrigado',
+                icon: 'hug',
+                nextScreen: 'MyPlants',
+            })
+        } catch (error) {
+            return Alert.alert('Não foi possível atualizar a planta. 😢')
+        }
+    }
+
     return(
         <ScrollView
             showsVerticalScrollIndicator={false}
@@ -67,6 +92,9 @@ export function PlantSave(){
         >
         <MainContainer>
             <PlantInfo>
+                <BackButton onPress={()=>{navigation.goBack()}}>
+                    <Feather name="chevron-left" size={30} color={colors.heading}/>
+                </BackButton>
                 <SvgFromUri
                     uri={plant.photo}
                     height={150}
@@ -84,7 +112,7 @@ export function PlantSave(){
 
 
             <ControllerView>
-                <TipContainer>
+                <TipContainer isUpdate={isUpdate}>
                     <TipImage 
                         source={Waterdrop} 
                     />
@@ -121,10 +149,18 @@ export function PlantSave(){
                     </DateTimePickerButton>
                 )}
 
-                <Button
-                    title="Cadastrar planta"
-                    onPress={handleSavePlant}
-                />
+                {
+                    isUpdate ?
+                    <Button
+                        title="Confirmar alterações"
+                        onPress={handleUpdatePlant}
+                    />
+                    :
+                    <Button
+                        title="Cadastrar planta"
+                        onPress={handleSavePlant}
+                    />
+                }
             </ControllerView>
         </MainContainer>
         </ScrollView>
@@ -143,6 +179,7 @@ const PlantInfo = styled.View`
     align-items:center;
     justify-content:center;
     background-color:${colors.shape};
+    position:relative;
 `
 
 const Title = styled.Text`
@@ -164,15 +201,19 @@ const ControllerView = styled.View`
     padding: 20px;
 `
 
-const TipContainer  = styled.View`
+const TipContainer  = styled.View<TipsProps>`
     flex-direction:row;
     justify-content:space-between;
     align-items:center;
-    background-color:${colors.blue_light};
+    background-color:${(props) => (
+        props.isUpdate ? colors.white : colors.blue_light 
+    )};
     padding:20px;
     border-radius:20px;
     position:relative;
-    bottom:60px;
+    bottom:${(props) => (
+        props.isUpdate ? 0 : 80 
+    )};
 `
 
 const TipImage = styled.Image`
@@ -209,4 +250,10 @@ const DateTimePickerButton = styled.TouchableOpacity`
 const DateTimePickerText = styled.Text`
     font-family:${fonts.text};
     color:${colors.heading};
+`
+
+const BackButton = styled.TouchableOpacity`
+    position:absolute;
+    top:50px;
+    left:30px;
 `

@@ -16,6 +16,7 @@ import {SvgFromUri, Text} from 'react-native-svg'
 import Waterdrop from '../assets/waterdrop.png';
 import { loadPlant, PlantProps, removePlant} from '../libs/storage';
 import { NoResultsAnimation } from '../components/NoResultsAnimation';
+import { useNavigation } from '@react-navigation/core';
 
 export function MyPlants(){
     const [myPlants, setMyPlants] = useState<PlantProps[]>([]);
@@ -24,6 +25,7 @@ export function MyPlants(){
     const [loading, setLoading] = useState(true);
     const [nextWatered, setNextWatered] = useState<string>();
     const [noResults, setNoResults] = useState(true);
+    const navigation = useNavigation();
 
     useEffect(() =>{
         async function loadStorageData(){
@@ -97,6 +99,10 @@ export function MyPlants(){
         }
     }
 
+    async function handleUpdate(plant: PlantProps) {
+        navigation.navigate('PlantSave', {plant, isUpdate:true});
+    }
+
     if (loading) return <Load/>
 
     return(
@@ -127,6 +133,7 @@ export function MyPlants(){
                                 <PlantCardSecondary 
                                     data={item}
                                     handleRemove={() => {handleRemove(item)}}
+                                    handleUpdate={() => {handleUpdate(item)}}
                                 />
                             )}
                             showsVerticalScrollIndicator={false}

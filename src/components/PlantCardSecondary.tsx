@@ -16,13 +16,13 @@ interface PlantProps extends RectButtonProps{
         hour:string,
     };
     handleRemove: () => void;
+    handleUpdate: () => void;
 }
 
-export function PlantCardSecondary({ data, handleRemove, ...rest} :PlantProps) {
+export function PlantCardSecondary({ data, handleRemove, handleUpdate, ...rest} :PlantProps) {
 
     return(
         <Swipeable
-            overshootRight={false}
             renderRightActions={() => (
                 <Animated.View>
                     <View>
@@ -31,6 +31,18 @@ export function PlantCardSecondary({ data, handleRemove, ...rest} :PlantProps) {
                             onPress={handleRemove}
                         >
                             <Feather name="trash" size={32} color={colors.white}/>
+                        </RectButton>
+                    </View>
+                </Animated.View>
+            )}
+            renderLeftActions={() => (
+                <Animated.View>
+                    <View>
+                        <RectButton
+                            style={styles.buttonEdit}
+                            onPress={handleUpdate}
+                        >
+                            <Feather name="edit-2" size={32} color={colors.white}/>
                         </RectButton>
                     </View>
                 </Animated.View>
@@ -85,6 +97,18 @@ const styles = StyleSheet.create({
         position:'relative',
         right:25,
         paddingLeft:15,
+    },
+    buttonEdit:{
+        width:100,
+        height:85,
+        backgroundColor: colors.blue,
+        marginTop:15,
+        borderRadius:20,
+        justifyContent:'center',
+        alignItems:'center',
+        position:'relative',
+        left:25,
+        paddingRight:15,
     },
     title:{
         flex:1,

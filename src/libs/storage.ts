@@ -80,6 +80,13 @@ export async function savePlant(plant: PlantProps): Promise<void> {
       throw new Error(error);
     }
   }
+
+  export async function updatePlant(plant: PlantProps){
+
+      await removePlant(plant.id)
+      await savePlant(plant)
+
+  }
   
   export async function loadPlant(): Promise<PlantProps[]> {
     try {
